@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Room of Requirements - Calendar</title>
+    <meta name="description" content="Magical calendar view for your Room of Requirements goals and milestones" />
+    
+    <!-- iOS App Capability -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RR Calendar">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background-image: url('/lovable-uploads/d966ec2c-0807-4038-93c5-f95355e799bf.png');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            color: #2d1b0e;
+            padding: 20px;
+        }
+        
+        .dark {
+            color: #f4f1e8;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(180deg, rgba(244, 241, 232, 0.95), rgba(240, 234, 214, 0.9));
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(180, 140, 70, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(45, 27, 14, 0.3);
+        }
+        
+        .dark .header {
+            background: linear-gradient(180deg, rgba(36, 32, 27, 0.95), rgba(30, 26, 21, 0.9));
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #d4af37;
+            text-shadow: 0 2px 4px rgba(45, 27, 14, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-style: italic;
+            opacity: 0.8;
+        }
+        
+        .calendar {
+            background: linear-gradient(180deg, rgba(244, 241, 232, 0.95), rgba(240, 234, 214, 0.9));
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(180, 140, 70, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(45, 27, 14, 0.3);
+        }
+        
+        .dark .calendar {
+            background: linear-gradient(180deg, rgba(36, 32, 27, 0.95), rgba(30, 26, 21, 0.9));
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .month-year {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d4af37;
+        }
+        
+        .nav-button {
+            background: linear-gradient(135deg, #d4af37, #c19b26);
+            border: 2px solid #b8941f;
+            color: #2d1b0e;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: rgba(180, 140, 70, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .calendar-day {
+            background: rgba(244, 241, 232, 0.8);
+            min-height: 120px;
+            padding: 8px;
+            border: none;
+            position: relative;
+        }
+        
+        .dark .calendar-day {
+            background: rgba(36, 32, 27, 0.8);
+        }
+        
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+        
+        .calendar-day.today {
+            background: rgba(212, 175, 55, 0.2);
+            border: 2px solid #d4af37;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .day-header {
+            background: rgba(212, 175, 55, 0.8);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #2d1b0e;
+        }
+        
+        .event {
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            margin: 1px 0;
+            border-radius: 3px;
+            color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .event.goal {
+            background: #d4af37;
+            color: #2d1b0e;
+        }
+        
+        .event.milestone {
+            background: #8b4513;
+        }
+        
+        .event.weekly {
+            background: #556b2f;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .theme-toggle {
+            background: linear-gradient(135deg, #d4af37, #c19b26);
+            border: 2px solid #b8941f;
+            color: #2d1b0e;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: 80px;
+                padding: 4px;
+            }
+            
+            .day-number {
+                font-size: 0.8rem;
+            }
+            
+            .event {
+                font-size: 0.6rem;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🏰 Room of Requirements Calendar</h1>
+            <p class="subtitle">"Time is the most valuable thing we have, because it is the most irrevocable"</p>
+        </div>
+        
+        <div class="controls">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
+            <button class="nav-button" onclick="window.close()">← Back to Room</button>
+        </div>
+        
+        <div class="calendar">
+            <div class="calendar-header">
+                <button class="nav-button" onclick="changeMonth(-1)">← Previous</button>
+                <div class="month-year" id="monthYear"></div>
+                <button class="nav-button" onclick="changeMonth(1)">Next →</button>
+            </div>
+            
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let data = null;
+
+        // Load data from parent window or localStorage
+        function loadData() {
+            try {
+                if (window.opener && window.opener.localStorage) {
+                    const savedData = window.opener.localStorage.getItem('room-of-requirements-data');
+                    if (savedData) {
+                        data = JSON.parse(savedData);
+                    }
+                } else {
+                    const savedData = localStorage.getItem('room-of-requirements-data');
+                    if (savedData) {
+                        data = JSON.parse(savedData);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Generate calendar
+        function generateCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthYear = document.getElementById('monthYear');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            monthYear.textContent = currentDate.toLocaleDateString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+            // Clear previous calendar
+            grid.innerHTML = '';
+            
+            // Add day headers
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                grid.appendChild(dayHeader);
+            });
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                grid.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                const currentDayDate = new Date(year, month, day);
+                if (currentDayDate.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
+                }
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+                
+                // Add events for this day
+                addEventsForDay(dayElement, currentDayDate);
+                
+                grid.appendChild(dayElement);
+            }
+        }
+
+        // Add events for a specific day
+        function addEventsForDay(dayElement, date) {
+            if (!data) return;
+            
+            const dateString = date.toISOString().split('T')[0];
+            
+            // Add goal deadlines
+            if (data.goals) {
+                data.goals.forEach(goal => {
+                    if (goal.targetDate === dateString && goal.title) {
+                        const event = document.createElement('div');
+                        event.className = 'event goal';
+                        event.textContent = `🎯 ${goal.title}`;
+                        event.title = goal.title;
+                        dayElement.appendChild(event);
+                    }
+                });
+            }
+            
+            // Add milestone deadlines
+            if (data.milestones) {
+                data.milestones.forEach(milestone => {
+                    if (milestone.dueDate === dateString && milestone.title) {
+                        const event = document.createElement('div');
+                        event.className = 'event milestone';
+                        event.textContent = `🚩 ${milestone.title}`;
+                        event.title = milestone.title;
+                        dayElement.appendChild(event);
+                    }
+                });
+            }
+            
+            // Add weekly items
+            if (data.weeklyItems) {
+                const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'lowercase' });
+                data.weeklyItems.forEach(item => {
+                    if ((item.dayOfWeek === dayOfWeek || item.dayOfWeek === '') && item.title) {
+                        const event = document.createElement('div');
+                        event.className = 'event weekly';
+                        const icon = item.type === 'role' ? '👤' : item.type === 'big-rock' ? '🪨' : '✅';
+                        event.textContent = `${icon} ${item.title}`;
+                        event.title = item.title;
+                        dayElement.appendChild(event);
+                    }
+                });
+            }
+        }
+
+        // Change month
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar();
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('calendar-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        // Initialize
+        function init() {
+            // Load theme preference
+            const savedTheme = localStorage.getItem('calendar-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+            }
+            
+            loadData();
+            generateCalendar();
+            
+            // Refresh data every 5 seconds if window is still open
+            setInterval(() => {
+                if (!document.hidden) {
+                    loadData();
+                    generateCalendar();
+                }
+            }, 5000);
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
