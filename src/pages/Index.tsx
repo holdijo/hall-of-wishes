@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import LongTermGoals from '@/components/LongTermGoals';
 import MilestonesProjects from '@/components/MilestonesProjects';
 import WeeklyPlanner from '@/components/WeeklyPlanner';
+import RolesSection from '@/components/RolesSection';
 import OwlPost from '@/components/OwlPost';
 
 // Types
@@ -36,6 +37,15 @@ interface Milestone {
   status: 'not-started' | 'in-progress' | 'completed';
 }
 
+interface Role {
+  id: string;
+  title: string;
+  description: string;
+  keyResponsibilities: string;
+  weeklyGoals: string;
+  isStarred: boolean;
+}
+
 interface WeeklyItem {
   id: string;
   type: 'role' | 'big-rock' | 'task';
@@ -60,6 +70,7 @@ interface AppData {
   goals: Goal[];
   milestones: Milestone[];
   weeklyItems: WeeklyItem[];
+  roles: Role[];
   owlPostItems: OwlPostItem[];
   lastModified: string;
 }
@@ -69,6 +80,7 @@ const Index = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [weeklyItems, setWeeklyItems] = useState<WeeklyItem[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [owlPostItems, setOwlPostItems] = useState<OwlPostItem[]>([]);
   const [isOwlPostOpen, setIsOwlPostOpen] = useState(false);
 
@@ -81,6 +93,7 @@ const Index = () => {
         setGoals(parsedData.goals || []);
         setMilestones(parsedData.milestones || []);
         setWeeklyItems(parsedData.weeklyItems || []);
+        setRoles(parsedData.roles || []);
         
         // Parse timestamps for owl post items
         const owlItems = (parsedData.owlPostItems || []).map(item => ({
@@ -101,11 +114,12 @@ const Index = () => {
   }, [toast]);
 
   // Auto-save data to localStorage
-  const saveData = (newGoals?: Goal[], newMilestones?: Milestone[], newWeeklyItems?: WeeklyItem[]) => {
+  const saveData = (newGoals?: Goal[], newMilestones?: Milestone[], newWeeklyItems?: WeeklyItem[], newRoles?: Role[]) => {
     const dataToSave: AppData = {
       goals: newGoals || goals,
       milestones: newMilestones || milestones,
       weeklyItems: newWeeklyItems || weeklyItems,
+      roles: newRoles || roles,
       owlPostItems,
       lastModified: new Date().toISOString()
     };
@@ -175,7 +189,7 @@ const Index = () => {
 
   const handleGoalsChange = (newGoals: Goal[]) => {
     setGoals(newGoals);
-    saveData(newGoals, milestones, weeklyItems);
+    saveData(newGoals, milestones, weeklyItems, roles);
     addOwlPostItem({
       type: 'change',
       title: 'Goals Updated',
@@ -186,7 +200,7 @@ const Index = () => {
 
   const handleMilestonesChange = (newMilestones: Milestone[]) => {
     setMilestones(newMilestones);
-    saveData(goals, newMilestones, weeklyItems);
+    saveData(goals, newMilestones, weeklyItems, roles);
     addOwlPostItem({
       type: 'change',
       title: 'Milestones Updated',
@@ -195,9 +209,20 @@ const Index = () => {
     });
   };
 
+  const handleRolesChange = (newRoles: Role[]) => {
+    setRoles(newRoles);
+    saveData(goals, milestones, weeklyItems, newRoles);
+    addOwlPostItem({
+      type: 'change',
+      title: 'Life Roles Updated',
+      description: 'Your life roles have been modified.',
+      priority: 'medium'
+    });
+  };
+
   const handleWeeklyItemsChange = (newWeeklyItems: WeeklyItem[]) => {
     setWeeklyItems(newWeeklyItems);
-    saveData(goals, milestones, newWeeklyItems);
+    saveData(goals, milestones, newWeeklyItems, roles);
     addOwlPostItem({
       type: 'change',
       title: 'Weekly Plan Updated',
@@ -212,6 +237,7 @@ const Index = () => {
         goals,
         milestones,
         weeklyItems,
+        roles,
         owlPostItems,
         lastModified: new Date().toISOString()
       };
@@ -258,6 +284,7 @@ const Index = () => {
           setGoals(importedData.goals || []);
           setMilestones(importedData.milestones || []);
           setWeeklyItems(importedData.weeklyItems || []);
+          setRoles(importedData.roles || []);
           
           // Parse timestamps for owl post items
           const owlItems = (importedData.owlPostItems || []).map(item => ({
@@ -267,7 +294,7 @@ const Index = () => {
           }));
           setOwlPostItems(owlItems);
           
-          saveData(importedData.goals, importedData.milestones, importedData.weeklyItems);
+          saveData(importedData.goals, importedData.milestones, importedData.weeklyItems, importedData.roles);
           
           toast({
             title: "Import Successful",
@@ -296,6 +323,11 @@ const Index = () => {
         />
         
         <main className="container mx-auto px-4 py-8 space-y-16">
+          <RolesSection 
+            roles={roles}
+            onRolesChange={handleRolesChange}
+          />
+          
           <LongTermGoals 
             goals={goals}
             onGoalsChange={handleGoalsChange}
